@@ -7,7 +7,7 @@ The intent of ONUG is to select a sample application to build and operate in a v
 
 
 ## Acknowledgements of open source code:
-We started here at the base WikiMedia dowload libraries, freely dowloadable under GNU General Pulic License.
+We started here at the base WikiMedia dowload libraries, freely dowloadable under GNU General Pulbic License.
 https://www.mediawiki.org/wiki/Download
 
 ## Existing content is available on Wikimedia Dump page:
