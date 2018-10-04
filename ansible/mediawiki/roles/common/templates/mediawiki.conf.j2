@@ -1,0 +1,22 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root {{ NGINX_DEPLOY_DIR }};
+    index index.php index.html index.htm index.nginx-debian.html;
+
+    server_name {{ WIKI_URL }};
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php{{ PHP_VERSION }}-fpm.sock;
+    }
+
+    location ~ /\.ht { 
+        deny all;
+    }
+}

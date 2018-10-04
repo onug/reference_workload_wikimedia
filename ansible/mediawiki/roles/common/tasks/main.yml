@@ -1,0 +1,121 @@
+---
+# MediaWiki installation
+
+- name: Install needed software
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+  vars:
+    packages:
+      - nginx
+      - python-pip
+      - software-properties-common
+
+- name: Remove old nginx config
+  become: yes
+  command: "rm {{ NGINX_BASE_DIR }}/sites-enabled/default" 
+  args:
+    warn: no
+  ignore_errors: yes
+
+- name: Ensure nginx is restarted and enabled to start at boot.
+  become: yes
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+- name: Add PHP repo
+  apt_repository:
+    repo: ppa:ondrej/php
+
+- name: Install PHP and libraries
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+  vars:
+    packages:
+      - php{{PHP_VERSION}}
+      - php{{PHP_VERSION}}-apcu
+      - php{{PHP_VERSION}}-cli
+      - php{{PHP_VERSION}}-common
+      - php{{PHP_VERSION}}-fpm
+      - php{{PHP_VERSION}}-gd
+      - php{{PHP_VERSION}}-intl
+      - php{{PHP_VERSION}}-mbstring
+      - php{{PHP_VERSION}}-xml
+      - php-pear
+      - php-pgsql
+      - pcre2-utils
+      - perlmagick
+
+- name: Download MediaWiki
+  get_url:
+    url: "{{ MEDIAWIKI_URL }}"
+    dest: "{{ DOWNLOAD_DIR }}"
+
+- name: Extract MediaWiki files
+  unarchive:
+    src: "{{ DOWNLOAD_DIR }}/{{ MEDIAWIKI_FILE }}.tar.gz"
+    dest: "{{ INSTALL_DIR }}"
+    owner: root
+    group: root
+    mode: 0644
+    copy: no
+
+- name: Deploy MediaWiki to nginx
+  shell: "cp -R {{ INSTALL_DIR }}/{{ MEDIAWIKI_FILE }}/* {{ NGINX_DEPLOY_DIR }}"
+
+- name: Copy MediaWiki's LocalSettings.php
+  template:
+    src: LocalSettings.php.j2
+    dest: "{{ NGINX_DEPLOY_DIR }}/LocalSettings.php"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy nginx configuration in place.
+  template:
+    src: mediawiki.conf.j2
+    dest: "{{ NGINX_CONF_PATH }}/mediawiki.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart nginx
+    - restart fpm
+
+- name: Create nginx symlink
+  file:
+    src: "{{ NGINX_BASE_DIR }}/sites-available/mediawiki.conf"
+    dest: "{{ NGINX_BASE_DIR }}/sites-enabled/mediawiki.conf"
+    state: link
+
+- name: Install PostgreSQL client
+  apt:
+    name: postgresql-client-9.5
+
+- name: Install PostgreSQL pip library
+  pip:
+    name: psycopg2
+    state: present
+
+- name: Copy dump file to the server
+  copy:
+    src: "{{ DUMP_FILE }}"
+    dest: "/tmp/{{ DUMP_FILE }}"
+    owner: root
+    group: root
+    mode: 0644
+
+
+- name: Restore MediaWiki database into RDS instance
+  postgresql_db:
+    port: "{{ DB_PORT }}"
+    login_host: "{{ DB_SERVER }}"
+    login_user: "{{ DB_USER }}"
+    login_password: "{{ DB_PASS }}"
+    name: "{{ DB_NAME }}"
+    state: restore
+    target: "/tmp/{{ DUMP_FILE }}"
+

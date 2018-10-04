@@ -1,0 +1,1 @@
+ansible/jenkins/roles/jenkins/files/pipeline.groovy

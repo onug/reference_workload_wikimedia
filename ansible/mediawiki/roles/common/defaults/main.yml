@@ -1,0 +1,31 @@
+
+# Vars
+DOWNLOAD_DIR: /tmp
+INSTALL_DIR: /opt
+
+# PHP
+PHP_VERSION: 7.2
+
+# nginx
+NGINX_CONF_PATH: /etc/nginx/sites-available
+NGINX_BASE_DIR: /etc/nginx
+NGINX_DEPLOY_DIR: /var/www/html
+
+# MediaWiki
+MEDIAWIKI_VERSION: 1.31
+MEDIAWIKI_RELEASE: 1
+MEDIAWIKI_FILE: mediawiki-{{ MEDIAWIKI_VERSION }}.{{ MEDIAWIKI_RELEASE }}
+MEDIAWIKI_URL: https://releases.wikimedia.org/mediawiki/{{ MEDIAWIKI_VERSION }}/{{ MEDIAWIKI_FILE }}.tar.gz
+
+# MediaWiki Settings
+WIKI_NAME: ONUG
+WIKI_URL: "{{ wiki_url }}"
+SHARE_INSTANCE_DATA: true # Boolean
+
+# Database Settings
+DB_SERVER: "{{ db_server }}"
+DB_PORT: 5432
+DB_NAME: "{{ db_name }}"
+DB_USER: postgres
+DB_PASS: "{{ db_pass }}"
+DUMP_FILE: mediawiki_db_dump.gz

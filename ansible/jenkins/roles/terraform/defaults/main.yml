@@ -1,0 +1,5 @@
+---
+# defaults file for terraform-role
+terraform_version: 0.11.8
+terraform_dir: /var/lib/jenkins/bin
+terraform_user: jenkins

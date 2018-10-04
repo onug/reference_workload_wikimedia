@@ -1,0 +1,84 @@
+---
+- name: Modify variables in init file
+  lineinfile:
+    dest: "{{ jenkins_init_file }}"
+    insertafter: '^{{ item.option }}='
+    regexp: '^{{ item.option}}=\"\${{ item.option }} '
+    line: '{{ item.option }}="${{ item.option }} {{ item.value }}"'
+    state: present
+  with_items:
+      "{{ jenkins_init_changes }}"
+  register: jenkins_init_prefix
+
+- name: Create .ssh directory
+  file:
+    path: "/var/lib/jenkins/.ssh"
+    state: directory
+    owner: "jenkins"
+    group: "jenkins"
+
+- name: Copy AWS SSH key to Jenkins
+  copy: 
+    src: "{{ jenkins_ssh_key_name }}"
+    dest: "/var/lib/jenkins/.ssh/{{ jenkins_ssh_key_name }}"
+    owner: jenkins
+    group: jenkins
+    mode: 0600
+
+- name: Create bin directory
+  file:
+    path: "/var/lib/jenkins/bin"
+    state: directory
+    owner: "jenkins"
+    group: "jenkins"
+
+- name: Set the Jenkins home directory
+  lineinfile:
+    dest: "{{ jenkins_init_file }}"
+    regexp: '^JENKINS_HOME=.*'
+    line: 'JENKINS_HOME={{ jenkins_home }}'
+  register: jenkins_home_config
+
+- name: Immediately restart Jenkins on init config changes.
+  service: 
+    name: jenkins
+    state: restarted
+  when: jenkins_init_prefix.changed
+
+- name: Set HTTP port in Jenkins config.
+  lineinfile:
+    backrefs: yes
+    dest: "{{ jenkins_init_file }}"
+    regexp: '^{{ jenkins_http_port_param }}='
+    line: '{{ jenkins_http_port_param }}={{ jenkins_http_port }}'
+  register: jenkins_http_config
+
+- name: Ensure jenkins_home {{ jenkins_home }} exists
+  file:
+    path: "{{ jenkins_home }}"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: u+rwx
+    follow: true
+
+- name: Create custom init scripts directory.
+  file:
+    path: "{{ jenkins_home }}/init.groovy.d"
+    state: directory
+    owner: "{{ jenkins_process_user }}"
+    group: "{{ jenkins_process_group }}"
+    mode: 0775
+
+- name: Add custom init script to setup basic security.
+  template:
+    src: basic-security.groovy.j2
+    dest: "{{ jenkins_home }}/init.groovy.d/security.groovy"
+
+- name: Trigger handlers immediately in case Jenkins was installed
+  meta: flush_handlers
+
+- name: Immediately restart Jenkins on http or user changes.
+  service: 
+    name: jenkins
+    state: restarted

@@ -1,0 +1,16 @@
+---
+- name: Install needed software
+  apt:
+    name: software-properties-common
+    state: present
+
+- name: Add Ansible repository
+  apt_repository:
+    repo: ppa:ansible/ansible
+    state: present
+    update_cache: yes
+
+- name: Install Ansible
+  apt:
+    name: ansible
+    state: present

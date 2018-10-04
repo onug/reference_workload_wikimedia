@@ -1,0 +1,61 @@
+---
+- name: Create .ssh directory
+  file:
+    path: "/var/lib/jenkins/.ssh"
+    state: directory
+    owner: "jenkins"
+    group: "jenkins"
+
+- name: Copy Git SSH Key
+  copy:
+    src: "{{ GIT_KEY }}"
+    dest: "/var/lib/jenkins/.ssh/{{ GIT_KEY }}"
+    owner: jenkins
+    group: jenkins
+    mode: 0600
+
+- name: Copy SSH configuration file
+  template:
+    src: ssh-config.j2
+    dest: /var/lib/jenkins/.ssh/config
+
+- name: Restart SSH service
+  service: 
+    name: ssh
+    state: restarted
+
+- name: Download Amazon CLI
+  get_url:
+    url: https://s3.amazonaws.com/aws-cli/awscli-bundle.zip
+    dest: /tmp/awscli-bundle.zip
+    validate_certs: no
+
+- name: Make sure zip is installed
+  apt:
+    name: zip
+    state: present
+
+- name: Unzip Amazon CLI
+  unarchive:
+    src: /tmp/awscli-bundle.zip
+    dest: /tmp/
+    copy: no
+    validate_certs: no
+
+- name: Install Amazon CLI
+  become_user: jenkins
+  shell: "./install -b ~/bin/aws"
+  args:
+    chdir: /tmp/awscli-bundle
+
+- name: Export Amazon PATH
+  become_user: jenkins
+  shell: "export PATH=~/bin:$PATH"
+
+- name: Copy Amazon Credentials file
+  copy:
+    src: credentials.aws
+    dest: ~/.aws/credentials
+    owner: jenkins
+    group: jenkins
+    mode: 0500
