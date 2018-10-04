@@ -35,57 +35,57 @@ https://www.mediawiki.org/wiki/Download
 ### Detailed Example Steps
 
 * Bring you from the ground-up on a brand-new ubuntu 16.04 server
+```
+# update apt-get
+sudo apt-get update
 
-    # update apt-get
-    sudo apt-get update
+# install / upgrade pip
+sudo apt-get install python-pip
+pip install --upgrade pip
 
-    # install / upgrade pip
-    sudo apt-get install python-pip
-    pip install --upgrade pip
+# install awscli
+pip install awscli --user
 
-    # install awscli
-    pip install awscli --user
+wrgeorge1983@ubuntu-s-2vcpu-4gb-nyc1-01:~$ aws configure --profile apcela
+AWS Access Key ID [None]: AKINOTAREALACCESSKEYIDQ
+AWS Secret Access Key [None]: NOTAREALSECRETEACCESSKEY
+Default region name [None]: us-east-1
+Default output format [None]: 
 
-    wrgeorge1983@ubuntu-s-2vcpu-4gb-nyc1-01:~$ aws configure --profile apcela
-    AWS Access Key ID [None]: AKINOTAREALACCESSKEYIDQ
-    AWS Secret Access Key [None]: NOTAREALSECRETEACCESSKEY
-    Default region name [None]: us-east-1
-    Default output format [None]: 
+# create s3 bucket to use (if not using an existing one), keep track of the name ('apcela-terraform') in this instance
+s3 mb apcela-terraform --profile apcela
 
-    # create s3 bucket to use (if not using an existing one), keep track of the name ('apcela-terraform') in this instance
-    s3 mb apcela-terraform --profile apcela
+# install ansible
+pip install ansible
 
-    # install ansible
-    pip install ansible
+# install terraform
+sudo apt-get install unzip
 
-    # install terraform
-    sudo apt-get install unzip
+wget https://releases.hashicorp.com/terraform/0.11.8/terraform_0.11.8_linux_amd64.zip
+unzip terraform_0.11.8_linux_amd64.zip
+sudo mv terraform /usr/local/bin/
+terraform --version 
 
-    wget https://releases.hashicorp.com/terraform/0.11.8/terraform_0.11.8_linux_amd64.zip
-    unzip terraform_0.11.8_linux_amd64.zip
-    sudo mv terraform /usr/local/bin/
-    terraform --version 
+# pull repo
+git clone https://bitbucket.org/flugel-it/onug
 
-    # pull repo
-    git clone https://bitbucket.org/flugel-it/onug
+# update configs
+cd onug
+vi scripts/mediawiki_deploy.sh
+    export TF_VAR_aws_profile="apcela" # profile name from configuring AWS CLI
+    edit aws_region_alias to use1 # us-east-1
 
-    # update configs
-    cd onug
-    vi scripts/mediawiki_deploy.sh
-        export TF_VAR_aws_profile="apcela" # profile name from configuring AWS CLI
-        edit aws_region_alias to use1 # us-east-1
-
-    vi terraform/mediawiki/must-have.tf
-        edit terraform.backend "s3".bucket # to bucket created earlier
-        edit terraform.backend "s3".profile # to aws cli profile created earlier
+vi terraform/mediawiki/must-have.tf
+    edit terraform.backend "s3".bucket # to bucket created earlier
+    edit terraform.backend "s3".profile # to aws cli profile created earlier
 
 
-    # execute
-    ./scripts/mediawiki_deploy.sh
+# execute
+./scripts/mediawiki_deploy.sh
 
-    # destroy (Important! Especially if you don't intend to keep paying for this)
-    ./scripts/mediawiki_destroy.sh
-
+# destroy (Important! Especially if you don't intend to keep paying for this)
+./scripts/mediawiki_destroy.sh
+```
 
 ## Existing content is available on Wikimedia Dump page:
 https://dumps.wikimedia.org/
