@@ -67,7 +67,7 @@ sudo mv terraform /usr/local/bin/
 terraform --version 
 
 # pull repo
-git clone https://bitbucket.org/flugel-it/onug
+git clone  https://github.com/onug/reference_workload_wikimedia.git
 
 # update configs
 cd onug
