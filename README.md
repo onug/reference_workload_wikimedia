@@ -101,7 +101,7 @@ This repository follows [Semantic Versioning](5) as the versioning
 
 ## Author
 
-This repository was made in 2018 by Mariano Rodríguez at [Flugel.it](4). For ONUG
+This repository was made in 2018 by Mariano Rodríguez at [Flugel.it](4). For ONUG  
 Additional contributions by William George at [Apcela](6). 
 
 
